@@ -1,0 +1,62 @@
+
+Software Construction — Assignment 1
+CI/CD activities report
+
+Student: Zheera (Zhird Daniel)
+Email: zdqiu220275@uniq.edu.iq
+
+
+1. Introduction
+
+This report describes the work I did for the CI/CD assignment: connecting GitHub with Jenkins so that each push triggers an automated pipeline, then building and testing the application, and finally publishing a Docker image to Docker Hub. The steps follow the ideas from our Software Construction lectures on continuous integration, automated testing, and deployment automation.
+
+
+2. Tools I used
+
+- Git for version control on my Windows machine (already installed before this assignment).
+- Jenkins, installed locally on Windows, as the automation server.
+- GitHub as the remote repository host.
+- Docker Desktop on Windows to build images and run containers.
+- Docker Hub account to store the published image.
+- Python with Flask for a small web service and pytest for automated checks.
+
+
+3. GitHub and Jenkins integration
+
+I signed in to GitHub inside Cursor and used my university email where needed. In Jenkins I configured the connection to GitHub using the GitHub API: I created a personal access token in GitHub with the permissions Jenkins needs, then added that token in Jenkins under credentials so Jenkins can clone the private or public repo and verify webhooks securely.
+
+I created a Pipeline job in Jenkins that loads the pipeline from my GitHub repository (Pipeline from SCM). The repository URL points to the branch I use for this course work.
+
+For automatic triggering when I push code, in the GitHub repository settings I added a webhook that posts to my Jenkins endpoint (using the URL and settings Jenkins expects for GitHub). After saving, pushes to my branch trigger the pipeline so I do not have to start the build by hand every time.
+
+
+4. What the pipeline does
+
+The pipeline runs on my Jenkins agent (Windows). The stages are:
+
+(1) Checkout — Jenkins pulls the latest commit from GitHub.
+
+(2) Install and test — Python dependencies are installed from the project requirements files, then pytest runs the automated tests. If any test fails, the build stops and nothing is pushed to Docker Hub. This matches the lecture idea that CI means integrating changes frequently with fast feedback when something breaks.
+
+(3) Docker build and push — If tests pass, Jenkins builds the container image from the project’s container recipe and tags it with the build number and also as latest. Using the Docker credentials I stored in Jenkins (Docker Hub username and access token), the image is logged in and pushed to my Docker Hub repository.
+
+
+5. Docker Hub setup
+
+On Docker Hub I created a repository name that matches what I put in the Jenkins environment (image name under my Docker Hub user). In Jenkins I added credentials with ID docker-hub-credentials so the pipeline can push without putting passwords in the script.
+
+
+6. What I learned
+
+Setting this up showed me how the pieces fit together: GitHub notifies Jenkins, Jenkins runs the same steps every time, Docker packages the runnable application, and Docker Hub is where I publish versions I can pull or deploy elsewhere. If I change only documentation or comments, the pipeline still runs tests so I keep trust in every release-like build.
+
+If something failed during the project (for example webhook not firing or Docker not on PATH), I checked the Jenkins console log, GitHub webhook delivery tab, and that Docker Desktop was running on the build machine.
+
+
+7. Conclusion
+
+I now have an end-to-end CI/CD flow from commit to tested Docker image on Docker Hub, aligned with the continuous integration and deployment concepts from the course. I can extend it later with more tests or deployment to a cloud service if the course requires it.
+
+
+— Zheera (Zhird Daniel), zdqiu220275@uniq.edu.iq
+
